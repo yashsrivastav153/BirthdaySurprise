@@ -17,7 +17,7 @@ def generate_qr_code():
     try:
         # URL for the birthday surprise webpage
         # Replace 'YOUR_USERNAME' with your actual GitHub username after hosting
-        url = "https://YOUR_USERNAME.github.io/BirthdaySurprise/index.html"
+        url = "https://yashsrivastav153.github.io/BirthdaySurprise/index.html"
         
         print("🎉 Birthday Surprise QR Code Generator 🎉")
         print("=" * 50)
