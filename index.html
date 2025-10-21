@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Surprise! 🎉</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Canvas for hearts tree animation */
+        #heartsCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Cake container */
+        .cake-container {
+            position: absolute;
+            bottom: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            transition: all 2s ease-in-out;
+            opacity: 0;
+        }
+
+        .cake-container.show {
+            bottom: 20%;
+            opacity: 1;
+        }
+
+        .cake-image {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+            animation: cakeBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes cakeBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Candles container */
+        .candles-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            opacity: 0;
+            transition: all 1s ease-in-out;
+        }
+
+        .candles-container.show {
+            opacity: 1;
+        }
+
+        .candle {
+            position: absolute;
+            width: 8px;
+            height: 30px;
+            background: linear-gradient(to bottom, #8B4513, #A0522D);
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .flame {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 20px;
+            background: radial-gradient(circle, #FFD700, #FF4500, #FF0000);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: flameFlicker 0.5s ease-in-out infinite alternate;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.8);
+        }
+
+        .flame.blown {
+            animation: blowOut 1s ease-out forwards;
+        }
+
+        @keyframes flameFlicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-2deg); }
+            100% { transform: translateX(-50%) scale(1.1) rotate(2deg); }
+        }
+
+        @keyframes blowOut {
+            0% { 
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateX(-50%) scale(0.8);
+                opacity: 0.5;
+            }
+            100% { 
+                transform: translateX(-50%) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        /* Smoke effect */
+        .smoke {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(128, 128, 128, 0.6);
+            border-radius: 50%;
+            animation: smokeRise 2s ease-out forwards;
+        }
+
+        @keyframes smokeRise {
+            0% { 
+                transform: translateX(-50%) translateY(0) scale(1);
+                opacity: 0.6;
+            }
+            100% { 
+                transform: translateX(-50%) translateY(-50px) scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Birthday message */
+        .birthday-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 4;
+            opacity: 0;
+            transition: all 1s ease-in-out;
+        }
+
+        .birthday-message.show {
+            opacity: 1;
+            animation: messageBounce 1s ease-in-out;
+        }
+
+        .main-message {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 1rem;
+            animation: textGlow 2s ease-in-out infinite alternate;
+        }
+
+        .sub-message {
+            font-size: 1.5rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: textGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes messageBounce {
+            0% { transform: translate(-50%, -50%) scale(0.5); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes textGlow {
+            0% { text-shadow: 3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.3); }
+            100% { text-shadow: 3px 3px 6px rgba(0,0,0,0.5), 0 0 30px rgba(255,255,255,0.6); }
+        }
+
+        /* Confetti canvas */
+        #confettiCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .main-message {
+                font-size: 2rem;
+            }
+            
+            .sub-message {
+                font-size: 1.2rem;
+            }
+            
+            .cake-image {
+                width: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-message {
+                font-size: 1.5rem;
+            }
+            
+            .sub-message {
+                font-size: 1rem;
+            }
+            
+            .cake-image {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas for hearts tree animation -->
+    <canvas id="heartsCanvas"></canvas>
+    
+    <!-- Cake container -->
+    <div class="cake-container" id="cakeContainer">
+        <img src="https://www.freeiconspng.com/uploads/cake-png-4.png" alt="Birthday Cake" class="cake-image" id="cakeImage">
+    </div>
+    
+    <!-- Candles container -->
+    <div class="candles-container" id="candlesContainer">
+        <!-- Candles will be dynamically created here -->
+    </div>
+    
+    <!-- Birthday message -->
+    <div class="birthday-message" id="birthdayMessage">
+        <div class="main-message">Happy Birthday, Dost! 🎉</div>
+        <div class="sub-message">Tera Din Special Hai! ❤️</div>
+    </div>
+    
+    <!-- Confetti canvas -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Confetti library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        // Global variables
+        let heartsCanvas, heartsCtx;
+        let confettiCanvas, confettiCtx;
+        let hearts = [];
+        let animationId;
+        let startTime;
+        let candles = [];
+
+        // Initialize the page
+        function init() {
+            // Set up canvases
+            heartsCanvas = document.getElementById('heartsCanvas');
+            heartsCtx = heartsCanvas.getContext('2d');
+            confettiCanvas = document.getElementById('confettiCanvas');
+            confettiCtx = confettiCanvas.getContext('2d');
+            
+            // Set canvas sizes
+            resizeCanvases();
+            
+            // Start the animation sequence
+            startAnimation();
+            
+            // Try to enter fullscreen
+            enterFullscreen();
+            
+            // Handle window resize
+            window.addEventListener('resize', resizeCanvases);
+        }
+
+        // Resize canvases to fill the screen
+        function resizeCanvases() {
+            heartsCanvas.width = window.innerWidth;
+            heartsCanvas.height = window.innerHeight;
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+
+        // Enter fullscreen mode
+        function enterFullscreen() {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+            } catch (error) {
+                console.log('Fullscreen not supported or failed:', error);
+            }
+        }
+
+        // Start the animation sequence
+        function startAnimation() {
+            startTime = Date.now();
+            createHeartsTree();
+            animate();
+        }
+
+        // Create hearts for the tree
+        function createHeartsTree() {
+            const centerX = heartsCanvas.width / 2;
+            const bottomY = heartsCanvas.height - 50;
+            const heartSize = 20;
+            const rows = 8;
+            
+            for (let row = 0; row < rows; row++) {
+                const heartsInRow = row + 1;
+                const startX = centerX - (heartsInRow - 1) * heartSize / 2;
+                
+                for (let i = 0; i < heartsInRow; i++) {
+                    const heart = {
+                        x: startX + i * heartSize,
+                        y: bottomY - row * heartSize * 0.8,
+                        size: heartSize,
+                        opacity: 0,
+                        targetOpacity: 1,
+                        delay: row * 200 + i * 100, // Staggered appearance
+                        scale: 0,
+                        targetScale: 1
+                    };
+                    hearts.push(heart);
+                }
+            }
+        }
+
+        // Main animation loop
+        function animate() {
+            const currentTime = Date.now();
+            const elapsed = currentTime - startTime;
+            
+            // Clear canvas
+            heartsCtx.clearRect(0, 0, heartsCanvas.width, heartsCanvas.height);
+            
+            // Update and draw hearts
+            hearts.forEach(heart => {
+                if (elapsed >= heart.delay) {
+                    const progress = Math.min((elapsed - heart.delay) / 500, 1);
+                    heart.opacity = heart.targetOpacity * progress;
+                    heart.scale = heart.targetScale * progress;
+                }
+                
+                if (heart.opacity > 0) {
+                    drawHeart(heart);
+                }
+            });
+            
+            // Show cake after 5 seconds
+            if (elapsed >= 5000 && !document.getElementById('cakeContainer').classList.contains('show')) {
+                showCake();
+            }
+            
+            // Show candles after 7 seconds
+            if (elapsed >= 7000 && !document.getElementById('candlesContainer').classList.contains('show')) {
+                showCandles();
+            }
+            
+            // Blow out candles after 10 seconds
+            if (elapsed >= 10000 && candles.length > 0 && !candles[0].blown) {
+                blowOutCandles();
+            }
+            
+            // Show message and confetti after 12 seconds
+            if (elapsed >= 12000 && !document.getElementById('birthdayMessage').classList.contains('show')) {
+                showMessage();
+                triggerConfetti();
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Draw a heart shape
+        function drawHeart(heart) {
+            heartsCtx.save();
+            heartsCtx.globalAlpha = heart.opacity;
+            heartsCtx.translate(heart.x, heart.y);
+            heartsCtx.scale(heart.scale, heart.scale);
+            
+            heartsCtx.fillStyle = '#ff4757';
+            heartsCtx.strokeStyle = '#ff3742';
+            heartsCtx.lineWidth = 2;
+            
+            heartsCtx.beginPath();
+            const topCurveHeight = heart.size * 0.3;
+            heartsCtx.moveTo(heart.x, heart.y + topCurveHeight);
+            
+            // Left curve
+            heartsCtx.bezierCurveTo(
+                heart.x, heart.y,
+                heart.x - heart.size / 2, heart.y,
+                heart.x - heart.size / 2, heart.y + topCurveHeight
+            );
+            
+            // Left bottom curve
+            heartsCtx.bezierCurveTo(
+                heart.x - heart.size / 2, heart.y + (heart.size + topCurveHeight) / 2,
+                heart.x, heart.y + (heart.size + topCurveHeight) / 2,
+                heart.x, heart.y + heart.size
+            );
+            
+            // Right bottom curve
+            heartsCtx.bezierCurveTo(
+                heart.x, heart.y + (heart.size + topCurveHeight) / 2,
+                heart.x + heart.size / 2, heart.y + (heart.size + topCurveHeight) / 2,
+                heart.x + heart.size / 2, heart.y + topCurveHeight
+            );
+            
+            // Right curve
+            heartsCtx.bezierCurveTo(
+                heart.x + heart.size / 2, heart.y,
+                heart.x, heart.y,
+                heart.x, heart.y + topCurveHeight
+            );
+            
+            heartsCtx.closePath();
+            heartsCtx.fill();
+            heartsCtx.stroke();
+            
+            heartsCtx.restore();
+        }
+
+        // Show the cake
+        function showCake() {
+            const cakeContainer = document.getElementById('cakeContainer');
+            cakeContainer.classList.add('show');
+        }
+
+        // Create and show candles
+        function showCandles() {
+            const candlesContainer = document.getElementById('candlesContainer');
+            candlesContainer.classList.add('show');
+            
+            // Create 5 candles
+            for (let i = 0; i < 5; i++) {
+                const candle = document.createElement('div');
+                candle.className = 'candle';
+                candle.style.left = (i * 40 - 80) + 'px';
+                candle.style.top = '0px';
+                
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                candle.appendChild(flame);
+                
+                candlesContainer.appendChild(candle);
+                candles.push({ element: candle, flame: flame, blown: false });
+            }
+        }
+
+        // Blow out candles with smoke effect
+        function blowOutCandles() {
+            candles.forEach((candle, index) => {
+                setTimeout(() => {
+                    // Add blown class to flame
+                    candle.flame.classList.add('blown');
+                    candle.blown = true;
+                    
+                    // Create smoke effect
+                    const smoke = document.createElement('div');
+                    smoke.className = 'smoke';
+                    smoke.style.left = (index * 40 - 80) + 'px';
+                    candle.element.appendChild(smoke);
+                    
+                    // Remove smoke after animation
+                    setTimeout(() => {
+                        if (smoke.parentNode) {
+                            smoke.parentNode.removeChild(smoke);
+                        }
+                    }, 2000);
+                    
+                }, index * 200); // Stagger the blow-out effect
+            });
+        }
+
+        // Show the birthday message
+        function showMessage() {
+            const message = document.getElementById('birthdayMessage');
+            message.classList.add('show');
+        }
+
+        // Trigger confetti effect
+        function triggerConfetti() {
+            try {
+                // Multiple confetti bursts
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 50,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                }, 250);
+                
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 50,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+                }, 400);
+                
+                // Continuous confetti for a few seconds
+                let confettiInterval = setInterval(() => {
+                    confetti({
+                        particleCount: 20,
+                        spread: 60,
+                        origin: { y: 0.6 }
+                    });
+                }, 500);
+                
+                // Stop confetti after 5 seconds
+                setTimeout(() => {
+                    clearInterval(confettiInterval);
+                }, 5000);
+                
+            } catch (error) {
+                console.log('Confetti library not loaded:', error);
+            }
+        }
+
+        // Handle cake image load error
+        document.getElementById('cakeImage').addEventListener('error', function() {
+            console.log('Cake image failed to load, using fallback');
+            // Create a simple cake using canvas if image fails
+            this.style.display = 'none';
+            createFallbackCake();
+        });
+
+        // Create a fallback cake using canvas
+        function createFallbackCake() {
+            const cakeContainer = document.getElementById('cakeContainer');
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 150;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw a simple cake
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(50, 80, 100, 60);
+            
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(60, 70, 80, 20);
+            
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(100, 60, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            cakeContainer.appendChild(canvas);
+        }
+
+        // Start the application when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
